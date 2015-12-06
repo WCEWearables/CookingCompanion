@@ -1,19 +1,25 @@
 package com.wce.wearables.cookingcompanion;
+import android.os.AsyncTask;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-
 import java.io.IOException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 /**
- * Created by Ben Vesel on 10/1/2015.
  *
  * Given a recipe from the api call, find the recipe information through html parsing with JSOUP
  *
  * Will parse recipes from allrecipes and cookingcloset specifically
  */
-public class HtmlParse {
+public class HtmlParse extends AsyncTask<Recipe, Object, Object> {
+
+    private AppCompatActivity mainActivity;
+
+    public HtmlParse(AppCompatActivity main) {
+        mainActivity = main;
+    }
 
     /**
      * Parses the recipe at the corresponding source_url located within the passed in
@@ -83,6 +89,11 @@ public class HtmlParse {
                 recipes.getIngredients().add(ingredients.get(i).text());
             }
         }
+    }
+
+    @Override
+    protected Object doInBackground(Recipe... params) {
+        return null;
     }
 }
 

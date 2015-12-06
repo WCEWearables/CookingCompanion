@@ -1,7 +1,12 @@
 package com.wce.wearables.cookingcompanion;
+import android.os.AsyncTask;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.net.*;
 import java.util.ArrayList;
 import com.google.gson.Gson;
@@ -9,70 +14,24 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-public class Parser {
 
-    private static ArrayList<Recipe> AllRecipes;
-    private static String stringQuery;
+public class Parser extends AsyncTask<String, String, ArrayList<Recipe>>{
 
-    public static void main(String [] args) {
-        try {
-
-            //read this in from the android application.  Will be a comma separated string value
-            String[] searchParams = stringQuery.split(",");
-            String ret = retrieveRecipes(searchParams);
-            ArrayList recipes = tryParseList(ret);
-            parseRecipeJSON(recipes);
-
-            for(int i = 0; i < AllRecipes.size(); i++) {
-                if(AllRecipes.get(i).getSource_url().toUpperCase().contains("ALLRECIPES")) {
-                    HtmlParse.parse(AllRecipes.get(i));
-                    printContents(AllRecipes.get(i));
-                    break;
-                }
-                else if(AllRecipes.get(i).getSource_url().toUpperCase().contains("CLOSETCOOKING")) {
-                    HtmlParse.parse(AllRecipes.get(i));
-                    printContents(AllRecipes.get(i));
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    //handles all the functioning for the thingy
-    public Parser(String sq) {
-        AllRecipes = new ArrayList<>();
-        stringQuery = sq;
-    }
+    ArrayList<Recipe> allRecipes = Global.AllRecipes;
+    private String stringQuery = null;
+    private AppCompatActivity mainActivity = null;
 
 
-    public static ArrayList<Recipe> init() {
-
-        String[] searchParams = stringQuery.split(",");
-
-        //trip the leading and trailing whitespace if there is any
-        for(int i = 0; i < searchParams.length; i++) {
-            searchParams[i] = searchParams[i].trim();
-        }
-
-        //retreive the JSON response/code for all the recipes
-        String jsonRecipes = retrieveRecipes(searchParams);
-
-        Log.d("HERE", "HERE");
-
-        //parse the JSON and then put it into the AllRecipes array
-        parseRecipeJSON(tryParseList(jsonRecipes));
-
-        return AllRecipes;
+    public Parser(AppCompatActivity main) {
+        mainActivity = main;
     }
 
     /**
      * Adds a recipe to the Recipe container.
      * @param e - the string of the recipe to be added
      */
-    private static void addRecipe(Recipe e) {
-        AllRecipes.add(e);
+    private void addRecipe(Recipe e) {
+        allRecipes.add(e);
     }
 
     /**
@@ -82,7 +41,7 @@ public class Parser {
      * @param searchParams The comma separated values being searched on.  Eg: "chicken, cheese, etc"
      * @return The corresponding JSON return string from the initial API call
      */
-    private static String retrieveRecipes(String[] searchParams) {
+    private String retrieveRecipes(String[] searchParams) {
 
         //Build the basic API string
         String call = "http://food2fork.com/api/search?key=06731f0c3bc47ddff3a7e4c9f139add4";
@@ -104,7 +63,7 @@ public class Parser {
      * @param array - the
      *
      */
-    private static void parseRecipeJSON(ArrayList array) {
+    private void parseRecipeJSON(ArrayList array) {
 
         Gson gson = new Gson();
 
@@ -127,31 +86,35 @@ public class Parser {
         }
     }
 
-    private static String readUrl(String urlString) {
-        BufferedReader reader = null;
+    private String readUrl(String urlString) {
+        InputStream in = null;
+        HttpURLConnection urlConnection = null;
 
         try {
             URL url = new URL(urlString);
-            reader = new BufferedReader(new InputStreamReader(url.openStream()));
+            urlConnection = (HttpURLConnection) url.openConnection();
+            in = new BufferedInputStream(urlConnection.getInputStream());
+
             StringBuilder buffer = new StringBuilder();
             int read;
-            char[] chars = new char[1024];
 
             //read all the JSON returned into a BufferedReader and return it as a string
-            while ((read = reader.read(chars)) != -1) {
-                buffer.append(chars, 0, read);
+            while ((read = in.read()) != -1) {
+                buffer.append((char)read);
             }
             return buffer.toString();
 
-        } catch(Exception ex) {
-            Log.d("Parser", "Exception Reading from URL");
+        } catch(IOException ex) {
+            Log.d("Parser", "Exception Reading from URL: " + ex.getMessage());
 
         } finally {
             //close the reader BufferedReader
-            if (reader != null) {
+            if (in != null) {
                 try {
-                    reader.close();
-                } catch(Exception ex) {
+                    in.close();
+                    urlConnection.disconnect();
+                }
+                catch(Exception ex) {
                     Log.d("Parser", "Exception closing BufferedReader");
                 }
             }
@@ -159,7 +122,7 @@ public class Parser {
         return null;
     }
 
-    private static ArrayList tryParseList(String jsonString) {
+    private ArrayList tryParseList(String jsonString) {
 
         try {
 
@@ -181,7 +144,7 @@ public class Parser {
      * Debugging function that prints out the contents of all the Recipe contents
      * @param r - the recipe object
      */
-    private static void printContents(Recipe r) {
+    private void printContents(Recipe r) {
         System.out.println("Image url is: " + r.getImage_url());
         System.out.println("Source url is: " + r.getSource_url());
         System.out.println("Title is: " + r.getTitle());
@@ -198,6 +161,51 @@ public class Parser {
         System.out.println("Prep time is: " + r.getPrepTime());
         System.out.println("Cook time is: " + r.getCookTime());
         System.out.println("Ready time is: " + r.getReadyTime());
+    }
+
+    @Override
+    protected ArrayList<Recipe> doInBackground(String ... params) {
+
+        stringQuery =  params[0];
+        String[] searchParams = stringQuery.split(",");
+
+        //trip the leading and trailing whitespace if there is any
+        for(int i = 0; i < searchParams.length; i++) {
+            searchParams[i] = searchParams[i].trim();
+        }
+
+        //retreive the JSON response/code for all the recipes
+        String jsonRecipes = retrieveRecipes(searchParams);
+
+        Log.d("JsonResponse", "JSON Response is: " + jsonRecipes);
+        
+        //parse the JSON and then put it into the AllRecipes array
+        parseRecipeJSON(tryParseList(jsonRecipes));
+
+        return allRecipes;
+    }
+
+    protected void onPostExecute(ArrayList<Recipe> r ) {
+        super.onPostExecute(r);
+
+        ArrayList<String> titles = new ArrayList<>();
+
+        //add the recipe titles
+        for(int i = 0; i < allRecipes.size(); i++) {
+
+            //only add if the publisher is closetcooking or allrecipes
+            if(allRecipes.get(i).getPublisher().toUpperCase().contains("CLOSET COOKING") || allRecipes.get(i).getPublisher().toUpperCase().contains("ALL RECIPES")) {
+                titles.add(allRecipes.get(i).getTitle());
+            } else {
+                allRecipes.remove(allRecipes.get(i));
+                i--;
+            }
+        }
+
+        ArrayAdapter adapter = new ArrayAdapter(mainActivity, R.layout.recipe_list, R.id.recipe_list_textview, titles);
+        ListView lv = (ListView) mainActivity.findViewById(R.id.listView);
+
+        lv.setAdapter(adapter);
     }
 }
 
