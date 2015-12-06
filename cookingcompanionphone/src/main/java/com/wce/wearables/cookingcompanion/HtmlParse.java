@@ -1,8 +1,21 @@
 package com.wce.wearables.cookingcompanion;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -13,8 +26,8 @@ import org.jsoup.select.Elements;
  *
  * Will parse recipes from allrecipes and cookingcloset specifically
  */
-public class HtmlParse extends AsyncTask<Recipe, Object, Object> {
-
+public class HtmlParse extends AsyncTask<Recipe, Object, Recipe> {
+    private Bitmap recipeImage = null;
     private AppCompatActivity mainActivity;
 
     public HtmlParse(AppCompatActivity main) {
@@ -92,8 +105,49 @@ public class HtmlParse extends AsyncTask<Recipe, Object, Object> {
     }
 
     @Override
-    protected Object doInBackground(Recipe... params) {
-        return null;
+    protected Recipe doInBackground(Recipe... params) {
+
+        parse(params[0]);
+
+        try {
+            //get the image associated with the recipe
+            URL url = new URL(params[0].getImage_url());
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+
+            InputStream input = connection.getInputStream();
+            recipeImage = BitmapFactory.decodeStream(input);
+
+        } catch(IOException ex) {
+            Log.d("HtmlParse", "Error parsing the image");
+        }
+
+        return params[0];
     }
+
+
+    @Override
+    protected void onPostExecute(Recipe o) {
+        super.onPostExecute(o);
+
+        ImageView imageView = (ImageView) mainActivity.findViewById(R.id.recipe_image);
+        TextView titleView = (TextView) mainActivity.findViewById(R.id.recipe_title);
+        TextView bodyView = (TextView) mainActivity.findViewById(R.id.recipe_body);
+
+        imageView.setImageBitmap(recipeImage);
+
+        //sets the title
+        titleView.setText(o.getTitle() + "\r\n");
+
+        //outputs the directions to the screen
+        for(int i = 0; i < o.getDirections().size(); i++) {
+            bodyView.append("Step " + (i+1) + " " + o.getDirections().get(i) + "\r\n\r\n");
+
+        }
+    }
+
+
+
 }
 

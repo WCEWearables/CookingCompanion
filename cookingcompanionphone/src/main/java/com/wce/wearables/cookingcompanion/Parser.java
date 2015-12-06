@@ -178,14 +178,15 @@ public class Parser extends AsyncTask<String, String, ArrayList<Recipe>>{
         String jsonRecipes = retrieveRecipes(searchParams);
 
         Log.d("JsonResponse", "JSON Response is: " + jsonRecipes);
-        
+
         //parse the JSON and then put it into the AllRecipes array
         parseRecipeJSON(tryParseList(jsonRecipes));
 
         return allRecipes;
     }
 
-    protected void onPostExecute(ArrayList<Recipe> r ) {
+    @Override
+    protected void onPostExecute(ArrayList<Recipe> r) {
         super.onPostExecute(r);
 
         ArrayList<String> titles = new ArrayList<>();
