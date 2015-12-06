@@ -1,8 +1,6 @@
 package com.wce.wearables.cookingcompanion;
+import android.util.Log;
 
-/**
- * Created by Ben Vesel on 11/8/2015.
- */
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -13,22 +11,16 @@ import com.google.gson.JsonParser;
 
 public class Parser {
 
-    public Parser() {
-
-    }
-
-    public static ArrayList<Recipe> AllRecipes = new ArrayList<Recipe>();
-
-    public static void addRecipe(Recipe e) {
-        AllRecipes.add(e);
-    }
+    private static ArrayList<Recipe> AllRecipes;
+    private static String stringQuery;
 
     public static void main(String [] args) {
         try {
-            String ret = retrieveRecipes("Chicken");
-            System.out.println(ret);
+
+            //read this in from the android application.  Will be a comma separated string value
+            String[] searchParams = stringQuery.split(",");
+            String ret = retrieveRecipes(searchParams);
             ArrayList recipes = tryParseList(ret);
-            System.out.println(recipes.get(0));
             parseRecipeJSON(recipes);
 
             for(int i = 0; i < AllRecipes.size(); i++) {
@@ -43,25 +35,76 @@ public class Parser {
                     break;
                 }
             }
-
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
-    static String retrieveRecipes(String searchParams) throws Exception {
+    //handles all the functioning for the thingy
+    public Parser(String sq) {
+        AllRecipes = new ArrayList<>();
+        stringQuery = sq;
+    }
 
-        //Build the API string
-        String call = "http://food2fork.com/api/search?key=06731f0c3bc47ddff3a7e4c9f139add4&q=" + searchParams;
-        System.out.println(call);
+
+    public static ArrayList<Recipe> init() {
+
+        String[] searchParams = stringQuery.split(",");
+
+        //trip the leading and trailing whitespace if there is any
+        for(int i = 0; i < searchParams.length; i++) {
+            searchParams[i] = searchParams[i].trim();
+        }
+
+        //retreive the JSON response/code for all the recipes
+        String jsonRecipes = retrieveRecipes(searchParams);
+
+        Log.d("HERE", "HERE");
+
+        //parse the JSON and then put it into the AllRecipes array
+        parseRecipeJSON(tryParseList(jsonRecipes));
+
+        return AllRecipes;
+    }
+
+    /**
+     * Adds a recipe to the Recipe container.
+     * @param e - the string of the recipe to be added
+     */
+    private static void addRecipe(Recipe e) {
+        AllRecipes.add(e);
+    }
+
+    /**
+     * Builds the url for calling the API initially to get the recipes, then calls the url via the
+     * readUrl method.
+     *
+     * @param searchParams The comma separated values being searched on.  Eg: "chicken, cheese, etc"
+     * @return The corresponding JSON return string from the initial API call
+     */
+    private static String retrieveRecipes(String[] searchParams) {
+
+        //Build the basic API string
+        String call = "http://food2fork.com/api/search?key=06731f0c3bc47ddff3a7e4c9f139add4";
+
+        //build the search parameters onto the api string
+        for(String s: searchParams) {
+            call += "&q=" + s.trim();
+        }
 
         //Call the Food2Fork API
+        Log.d("ParserUrl", "URL is " + call);
         return readUrl(call);
 
     }
 
-    static int parseRecipeJSON(ArrayList array) {
+
+    /**
+     * Parses the
+     * @param array - the
+     *
+     */
+    private static void parseRecipeJSON(ArrayList array) {
 
         Gson gson = new Gson();
 
@@ -81,37 +124,43 @@ public class Parser {
             Recipe newRecipe = new Recipe(newArray[11], newArray[7], newArray[5], newArray[1]);
 
             addRecipe(newRecipe);
-            System.out.println(i);
-            System.out.println(newRecipe.getImage_url());
-            System.out.println(newRecipe.getPublisher());
-            System.out.println(newRecipe.getSource_url());
-            System.out.println(newRecipe.getTitle());
-
         }
-
-        return 0;
     }
 
-    private static String readUrl(String urlString) throws Exception {
+    private static String readUrl(String urlString) {
         BufferedReader reader = null;
+
         try {
             URL url = new URL(urlString);
             reader = new BufferedReader(new InputStreamReader(url.openStream()));
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             int read;
             char[] chars = new char[1024];
-            while ((read = reader.read(chars)) != -1)
-                buffer.append(chars, 0, read);
 
+            //read all the JSON returned into a BufferedReader and return it as a string
+            while ((read = reader.read(chars)) != -1) {
+                buffer.append(chars, 0, read);
+            }
             return buffer.toString();
+
+        } catch(Exception ex) {
+            Log.d("Parser", "Exception Reading from URL");
+
         } finally {
-            if (reader != null)
-                reader.close();
+            //close the reader BufferedReader
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch(Exception ex) {
+                    Log.d("Parser", "Exception closing BufferedReader");
+                }
+            }
         }
+        return null;
     }
 
-    public static ArrayList tryParseList(String jsonString) {
-        // TODO Auto-generated method stub
+    private static ArrayList tryParseList(String jsonString) {
+
         try {
 
             JsonParser jsonParser = new JsonParser();
@@ -119,21 +168,20 @@ public class Parser {
             JsonArray jsonArr = jo.getAsJsonArray("recipes");
             //jsonArr.
             Gson googleJson = new Gson();
-            ArrayList jsonObjList = googleJson.fromJson(jsonArr, ArrayList.class);
-            System.out.println("List size is : "+jsonObjList.size());
-            System.out.println("List Elements are  : "+jsonObjList.toString());
 
-            return jsonObjList;
-
+            return googleJson.fromJson(jsonArr, ArrayList.class);
 
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d("Parser", "Error trying to parse list");
         }
         return null;
     }
 
-    public static void printContents(Recipe r) {
+    /**
+     * Debugging function that prints out the contents of all the Recipe contents
+     * @param r - the recipe object
+     */
+    private static void printContents(Recipe r) {
         System.out.println("Image url is: " + r.getImage_url());
         System.out.println("Source url is: " + r.getSource_url());
         System.out.println("Title is: " + r.getTitle());

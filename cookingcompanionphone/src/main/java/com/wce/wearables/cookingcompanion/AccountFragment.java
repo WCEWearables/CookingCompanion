@@ -10,8 +10,7 @@ import android.view.ViewGroup;
 public class AccountFragment extends Fragment {
 
     public static AccountFragment newInstance() {
-        AccountFragment fragment = new AccountFragment();
-        return fragment;
+        return new AccountFragment();
     }
 
     public AccountFragment() {
@@ -19,13 +18,9 @@ public class AccountFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.activity_login, container, false);
-        return rootView;
+        return inflater.inflate(R.layout.activity_login, container, false);
+
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        ((MainActivity) activity).onSectionAttached(1);
-    }
+
 }

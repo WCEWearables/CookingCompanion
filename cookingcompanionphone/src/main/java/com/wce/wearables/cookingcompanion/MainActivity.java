@@ -1,17 +1,13 @@
 package com.wce.wearables.cookingcompanion;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+
 
 public class MainActivity extends AppCompatActivity implements NavigationDrawerFragment.NavigationDrawerCallbacks {
 
@@ -21,7 +17,7 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
     private NavigationDrawerFragment mNavigationDrawerFragment;
 
     /**
-     * Used to store the last screen title. For use in {@link #restoreActionBar()}.
+     * Used to store the last screen title. For use in getActionBar
      */
     private CharSequence mTitle;
 
@@ -36,6 +32,9 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setTitle(mTitle);
+        actionBar.setDisplayShowTitleEnabled(true);
 
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
@@ -47,51 +46,39 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        if (!this.loaded) { return; }
+        if (!this.loaded) {
+            return;
+        }
 
         // update the main content by replacing fragments
         FragmentManager fragmentManager = getSupportFragmentManager();
+        ActionBar actionBar = getSupportActionBar();
 
-        switch(position) {
+
+        switch (position) {
             case 0:
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, AccountFragment.newInstance())
                         .commit();
+                actionBar.setTitle(R.string.title_section1);
+                break;
             case 1:
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, BrowseFragment.newInstance())
                         .commit();
+                actionBar.setTitle(R.string.title_section2);
+                break;
             case 2:
                 fragmentManager.beginTransaction()
                         .replace(R.id.container, FavoritesFragment.newInstance())
                         .commit();
-            default:
-        }
-    }
-
-    public void onSectionAttached(int number) {
-        switch (number) {
-            case 0:
-                mTitle = getString(R.string.title_section1);
-                break;
-            case 1:
-                mTitle = getString(R.string.title_section2);
-                break;
-            case 2:
-                mTitle = getString(R.string.title_section3);
+                actionBar.setTitle(R.string.title_section3);
                 break;
             default:
+                actionBar.setTitle(mTitle);
                 break;
         }
     }
-
-    public void restoreActionBar() {
-        ActionBar actionBar = getSupportActionBar();
-        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setDisplayShowTitleEnabled(true);
-        actionBar.setTitle(mTitle);
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -100,7 +87,6 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
             // if the drawer is not showing. Otherwise, let the drawer
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.menu_main, menu);
-            restoreActionBar();
             return true;
         }
         return super.onCreateOptionsMenu(menu);

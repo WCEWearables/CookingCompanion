@@ -26,7 +26,7 @@
 
     <TextView
         android:layout_width="wrap_content"
-        android:text="ChangePassword"
+        android:text="Change Password"
         android:layout_height="wrap_content" />
 
     <EditText
@@ -51,12 +51,14 @@
     <Button
         android:id="@+id/bSubmit"
         android:text="Submit"
+        android:clickable="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <Button
         android:id="@+id/bLogout"
         android:text="Logout"
+        android:clickable="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </LinearLayout>
