@@ -32,6 +32,21 @@
             android:text=""
             android:id="@+id/recipe_body" />
 
+        <Button
+            android:id="@+id/bSendToWatch"
+            android:text="Send to Watch"
+            android:layout_width="match_parent"
+            android:clickable="true"
+            android:layout_marginBottom="10dp"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/bBackToSearch"
+            android:text="Back to Recipe Search"
+            android:layout_width="match_parent"
+            android:clickable="true"
+            android:layout_marginBottom="10dp"
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
 </ScrollView>
