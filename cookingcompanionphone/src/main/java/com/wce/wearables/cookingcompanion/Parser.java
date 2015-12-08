@@ -167,6 +167,7 @@ public class Parser extends AsyncTask<String, String, ArrayList<Recipe>>{
     protected ArrayList<Recipe> doInBackground(String ... params) {
 
         stringQuery =  params[0];
+        stringQuery = stringQuery.replaceAll(" ", "%20");
         String[] searchParams = stringQuery.split(",");
 
         //trip the leading and trailing whitespace if there is any
