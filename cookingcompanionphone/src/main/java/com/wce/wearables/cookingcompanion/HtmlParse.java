@@ -135,12 +135,27 @@ public class HtmlParse extends AsyncTask<Recipe, Object, Recipe> {
         ImageView imageView = (ImageView) mainActivity.findViewById(R.id.recipe_image);
         TextView titleView = (TextView) mainActivity.findViewById(R.id.recipe_title);
         TextView bodyView = (TextView) mainActivity.findViewById(R.id.recipe_body);
+        TextView prepView = (TextView) mainActivity.findViewById(R.id.prep_time);
+        TextView ingredView = (TextView) mainActivity.findViewById(R.id.ingredients);
 
         imageView.setImageBitmap(recipeImage);
 
         //sets the title
         titleView.setText(o.getTitle() + "\r\n");
 
+        //Sets prep time
+        prepView.append("\r\n");
+        if (o.getPrepTime() != null) {
+            prepView.append("Prep time: " + o.getPrepTime() + "\r\n");
+        }
+
+        ingredView.append("Ingredients:\r\n");
+        //Sets ingredients
+        for(int i = 0; i < o.getIngredients().size(); i++) {
+            ingredView.append("Item " + (i+1) + ": " + o.getIngredients().get(i) + "\r\n");
+        }
+
+        bodyView.append("\r\nDirections:\r\n");
         //outputs the directions to the screen
         for(int i = 0; i < o.getDirections().size(); i++) {
             bodyView.append("Step " + (i+1) + " " + o.getDirections().get(i) + "\r\n\r\n");

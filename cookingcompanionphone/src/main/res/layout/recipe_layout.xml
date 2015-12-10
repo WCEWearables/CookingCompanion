@@ -19,10 +19,39 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="30sp"
-
+            android:layout_gravity="center_horizontal"
+            android:textStyle="bold"
             android:text=""
             android:id="@+id/recipe_title" />
 
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="5px"
+            android:background="#DADADA" />
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/prep_time"
+            android:textStyle="bold"
+            android:textSize="15sp"
+            android:layout_gravity="center_horizontal" />
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:id="@+id/ingredients"
+            android:textSize="15sp"
+            android:layout_gravity="center_horizontal" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="5px"
+            android:background="#DADADA" />
 
         <TextView
             android:layout_width="match_parent"
@@ -31,6 +60,11 @@
 
             android:text=""
             android:id="@+id/recipe_body" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="5px"
+            android:background="#DADADA" />
 
         <Button
             android:id="@+id/bSendToWatch"
