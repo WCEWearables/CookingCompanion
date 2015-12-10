@@ -17,6 +17,8 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
     @Override
     public void onConnected(Bundle bundle) {
 
+
+
     }
 
     @Override

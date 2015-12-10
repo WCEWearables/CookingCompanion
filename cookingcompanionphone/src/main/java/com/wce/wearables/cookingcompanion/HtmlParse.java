@@ -3,19 +3,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Html;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -64,15 +58,17 @@ public class HtmlParse extends AsyncTask<Recipe, Object, Recipe> {
 
             for(int i = 0; i < directions.size() - 1; i++) {
                 recipes.getDirections().add((directions.get(i).text()));
-
             }
             //Parse the times from allrecipes.com
             Elements times = doc.select(".prepTime > .prepTime__item");
 
-            recipes.setPrepTime(times.get(1).text().replace("Prep", ""));
-            recipes.setCookTime(times.get(2).text().replace("Cook", ""));
-            recipes.setReadyTime(times.get(3).text().replace("Ready In", ""));
-
+            if(times.size() == 4) {
+                recipes.setPrepTime(times.get(1).text().replace("Prep", ""));
+                recipes.setCookTime(times.get(2).text().replace("Cook", ""));
+                recipes.setReadyTime(times.get(3).text().replace("Ready In", ""));
+            } else {
+                Log.w("HtmlParse", "Unable to get the times");
+            }
             //Parse ingredients
             Elements ingredients = doc.select(".checkList__line");
 
@@ -84,9 +80,14 @@ public class HtmlParse extends AsyncTask<Recipe, Object, Recipe> {
         } else if(recipes.getSource_url().toUpperCase().contains("CLOSETCOOKING")) {
             Elements times = doc.select(".details > span");
 
-            recipes.setPrepTime(times.get(0).text().replace("Prep Time: ", ""));
-            recipes.setCookTime(times.get(1).text().replace("Cook Time: ", ""));
-            recipes.setReadyTime(times.get(2).text().replace("Total Time: ", ""));
+
+            if(times.size() == 3) {
+                recipes.setPrepTime(times.get(0).text().replace("Prep Time: ", ""));
+                recipes.setCookTime(times.get(1).text().replace("Cook Time: ", ""));
+                recipes.setReadyTime(times.get(2).text().replace("Total Time: ", ""));
+            } else {
+                Log.w("HtmlParse", "Unable to get the times");
+            }
 
             Elements directions = doc.select(".instructions > [itemprop]");
 
@@ -146,8 +147,5 @@ public class HtmlParse extends AsyncTask<Recipe, Object, Recipe> {
 
         }
     }
-
-
-
 }
 

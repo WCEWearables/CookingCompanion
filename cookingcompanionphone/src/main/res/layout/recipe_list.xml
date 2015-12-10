@@ -4,7 +4,6 @@
     android:layout_height="wrap_content"
     android:id="@+id/recipe_list_textview"
     android:minHeight="?android:attr/listPreferredItemHeight"
-    android:gravity="center_vertical"
-    >
+    android:gravity="center_vertical">
 
 </TextView>
